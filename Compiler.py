@@ -9,10 +9,12 @@ if __name__ == '__main__':
 		filename = input("Enter file name: ")
 	else:
 		filename = sys.argv[1]
-	quiz = MDQuiz(filename)
+	mdquiz = MDQuiz(filename)  # Parse the file into metadata
+	# generate qti data from metadata
+	# write back to QTI file
 
-	quiz.debug()
-	for q in quiz.questions:
+	mdquiz.debug()
+	for q in mdquiz.questions:
 		if q.__class__.__name__ == 'MDGroup':
 			print('--group-start--')
 			print('points per question:', q.ppq)

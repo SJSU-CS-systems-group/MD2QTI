@@ -18,7 +18,7 @@ class MDQuestion(Question):
 		qtype (str): Question type
 		feedback (str): General feedback for question
 	"""
-	def __init__(self, docs, renderer = HTMLRenderer):
+	def __init__(self, docs, renderer=HTMLRenderer):
 		"""
 		Create a question with parsed MD data
 		Raises an error if any issue found
@@ -35,15 +35,15 @@ class MDQuestion(Question):
 		with renderer() as renderer:
 			for doc in docs:
 				if doc.__class__.__name__ == 'CodeFence':
-					if not in_question:
+					if not self.in_question:
 						raise Exception('\'\`\`\`\' code block should be inside \'@question\'')
 					pass
-#					 Send doc.rawText to code script runner and re-render the result
-#					 Example code:
-#					 print(doc.language)
-#					 print(doc.rawText)
-#					 result = runcode(doc.rawText, doc.language)
-#					 self.question += renderer.render(Document(result))
+				# Send doc.rawText to code script runner and re-render the result
+				# Example code:
+				# print(doc.language)
+				# print(doc.rawText)
+				# result = runcode(doc.rawText, doc.language)
+				# self.question += renderer.render(Document(result))
 				if doc.__class__.__name__ == 'Setting' and doc.option == 'question':
 					self.in_question = True
 				elif doc.__class__.__name__ == 'Setting' and doc.option == 'answer':
@@ -58,7 +58,6 @@ class MDQuestion(Question):
 				elif doc.__class__.__name__ == 'Setting':
 					self.setOption(doc)
 
-		
 	def setOption(self, doc):
 		"""
 		Extract option from '@' setting
@@ -74,30 +73,29 @@ class MDQuestion(Question):
 		elif doc.option == 'question':
 			self.question = doc.content
 		elif doc.option == 'type':
-			self.qtype = Qtypes.getQtype(doc.content)
+			self.qtype = Qtype.getQtype(doc.content)
 			if self.qtype < 0:
 				raise Exception(doc.content + ' is not a correct question type.')
 		elif doc.option == 'feedback':
 			self.feedback = doc.content
-			
-			
+
 	def setAnswer(self, doc):
 		"""
 		Unwrap parsed MD and populate an answer
 		"""
-#		  Question type code
-#		 'multiple choice': 1,
-#		 'multiple answer': 2,
-#		 'numerical': 3,
-#		 'formula': 4,
-#		 'essay': 5,
-#		 'blank': 6,
-#		 'multiple blank': 7,
-#		 'matching': 8,
-#		 'multiple dropdown': 9,
-#		 'file': 10,
-#		 'text': 11
-		if self.qtype == 1 or self.qtype == 2 or self.qtype == 6: # multiple choice/answer, blank
+		# Question type code
+		# 'multiple choice': 1,
+		# 'multiple answer': 2,
+		# 'numerical': 3,
+		# 'formula': 4,
+		# 'essay': 5,
+		# 'blank': 6,
+		# 'multiple blank': 7,
+		# 'matching': 8,
+		# 'multiple dropdown': 9,
+		# 'file': 10,
+		# 'text': 11
+		if self.qtype == 1 or self.qtype == 2 or self.qtype == 6:  # multiple choice/answer, blank
 			if doc.__class__.__name__ == 'List':
 				for item in doc.children:
 					self.answers.append(MultipleChoice(item))
@@ -108,7 +106,7 @@ class MDQuestion(Question):
 				self.answers.append(Numerical(doc))
 			else:
 				raise Exception('Answer format is incorrect.')
-		elif self.qtype == 4: # formula
+		elif self.qtype == 4:  # formula
 			if not self.answers:
 				self.answers.append(Formula())
 			if doc.__class__.__name__ == 'List' and doc.children[0].leader == '-':
@@ -120,17 +118,16 @@ class MDQuestion(Question):
 				self.answers[0].setAnswer(doc.children[0])
 			else:
 				raise Exception('Answer format is incorrect.')
-		elif self.qtype == 7 or self.qtype == 8 or self.qtype == 9: # matching, multiple blanks/dropdown
+		elif self.qtype == 7 or self.qtype == 8 or self.qtype == 9:  # matching, multiple blanks/dropdown
 			if doc.__class__.__name__ == 'List' and doc.children[0].leader == '+':
 				for key in doc.children:
 					for item in key.children[1].children:
 						self.answers.append(Matching(item, key.children[0]))
 			else:
 				raise Exception('Answer format is incorrect')
-		elif self.qtype == 5 or self.qtype == 10 or self.qtype == 11: # essay, file, text
+		elif self.qtype == 5 or self.qtype == 10 or self.qtype == 11:  # essay, file, text
 			raise Exception('Answer is not required for essay, file, text question-type')
-	
-			  
+
 	def debug(self):
 		"""
 		Print all members for debug purpose
@@ -147,7 +144,7 @@ class MDQuestion(Question):
 class MDGroup(Group):
 	"""
 	Questions can be populated in a group and randomly picked
-	 * 'points per question' will overwrite the points of each question
+	* 'points per question' will overwrite the points of each question
 	
 	Attr:
 		pick (int): The number of questions that will be picked
@@ -179,8 +176,8 @@ class MDQuiz(Quiz):
 	Attr:
 		title (str): Quiz title
 		desc (str): Quiz description
-		questions (List): List of Group and Question. They are populated into one list to
-						  follow the order of questions in MD file
+		questions (List): List of Group and Question. They are populated
+		into one list to follow the order of questions in MD file.
 	"""
 	def __init__(self, filename):
 		self.title = ''
@@ -236,13 +233,11 @@ class MDQuiz(Quiz):
 			except Exception as e:
 				print('Error:', e)
 
-		
 	def setTitle(self, title):
 		if self.title != '':
 			raise Exception('Quiz title is already defined')
 		else:
 			self.title = title
-	
 
 	def setDescription(self, desc):
 		if self.description != '':

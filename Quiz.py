@@ -18,3 +18,9 @@ class Quiz:
 		self.title = title
 		self.description = description
 		self.groups = groups
+
+	def print(self):
+		for group in self.groups:
+			for question in group.questions:
+				print(question)
+		return

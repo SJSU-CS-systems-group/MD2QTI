@@ -35,20 +35,20 @@ if __name__ == '__main__':
     q10c3 = Choice("big", True, 2)
     q10c4 = Choice("small", True, 2)
 
-    q1 = Question("How many bones in the human body?", QType.multiple_choice_question, [q1c1, q1c2, q1c3, q1c4])
-    q2 = Question("How many teeth in adult human mouth?", QType.numerical_question, [q2c1])
-    q3 = Question("A human's thumb is as long as his or her nose?", QType.true_false_question, [q3c1, q3c2])
-    q4 = Question("What is the capital of germany?", QType.short_answer_question, [q4c1, q4c2])
+    q1 = Question("How many bones in the human body?", Qtype.getQtype('multiple choice'), [q1c1, q1c2, q1c3, q1c4])
+    q2 = Question("How many teeth in adult human mouth?", Qtype.getQtype('numerical'), [q2c1])
+    q3 = Question("A human's thumb is as long as his or her nose?", Qtype.getQtype('multiple choice'), [q3c1, q3c2])
+    q4 = Question("What is the capital of germany?", Qtype.getQtype('blank'), [q4c1, q4c2])
     q5 = Question("The capital of France is [1] and the capital of Italy is [2]?",
-                  QType.fill_in_multiple_blanks_question, [q5c1, q5c2, q5c3, q5c4])
+                  Qtype.getQtype('multiple blanks'), [q5c1, q5c2, q5c3, q5c4])
     q6 = Question("What are the capitals of South Africa?",
-                  QType.multiple_answers_question, [q6c1, q6c2, q6c3, q6c4])
+                  Qtype.getQtype('multiple answers'), [q6c1, q6c2, q6c3, q6c4])
     q7 = Question("Cells related to [1] divide remarkably [2] than other cells in the body.",
-                  QType.multiple_dropdowns_question, [q7c1, q7c2, q7c3, q7c4])
-    q8 = Question("Upload the drawing of the human lungs here", QType.file_upload_question, [])
-    q9 = Question("You can do it! Don't give up", QType.text_only_question, [])
-    q10 = Question("Match the following", QType.matching_question, [q10c1, q10c2, q10c3, q10c4])
-    q11 = Question("Write an essay on how to cheat during exams", QType.essay_question, [])
+                  Qtype.getQtype('multiple dropdown'), [q7c1, q7c2, q7c3, q7c4])
+    q8 = Question("Upload the drawing of the human lungs here", Qtype.getQtype('file'), [])
+    q9 = Question("You can do it! Don't give up", Qtype.getQtype('text'), [])
+    q10 = Question("Match the following", Qtype.getQtype('matching'), [q10c1, q10c2, q10c3, q10c4])
+    q11 = Question("Write an essay on how to cheat during exams", Qtype.getQtype('essay'), [])
 
     g1 = Group(2, [q1, q2, q3])
     g2 = Group(2, [q4, q5, q6])

@@ -4,7 +4,7 @@ from mistletoe import Document
 from mistletoe.html_renderer import HTMLRenderer
 
 
-class Qtypes:
+class Qtype:
 	"""
 	Validate and convert question type
 	"""
@@ -37,16 +37,14 @@ class Choice:
 		self.is_correct = is_correct
 		self.feedback = feedback
 		self.info = info
-	
-	
+
 	def setVal(self, doc):
 		for item in doc.children:
 			if item.__class__.__name__ == 'RawText':
 				self.val += item.content
 			elif item.__class__.__name__ == 'LineBreak':
 				self.val += '\n'
-				
-				
+
 	def setKey(self, doc):
 		for item in doc.children:
 			if item.__class__.__name__ == 'RawText':
@@ -54,7 +52,6 @@ class Choice:
 			elif item.__class__.__name__ == 'LineBreak':
 				self.key += '\n'
 
-				
 	def setFeedback(self, li):
 		for fb in li.children:
 			if fb.__class__.__name__ == 'Setting' and fb.option == 'feedback':
@@ -88,8 +85,7 @@ class MultipleChoice(Choice):
 					self.setFeedback(li)
 		with renderer() as renderer:
 			self.feedback = renderer.render(Document(self.feedback))
-			
-			
+
 	def debug(self):
 		print('  val:', self.val)
 		print('  is_correct:', self.is_correct)
@@ -100,7 +96,6 @@ class Numerical(Choice):
 	"""
 	Answer for Numerical
 	"""
-	
 	def __init__(self, doc):
 		"""
 		Create a new choice from parsed MD data
@@ -116,8 +111,7 @@ class Numerical(Choice):
 				self.margin = float(split[1])
 			else:
 				raise Exception('Answer format is incorrect')
-			
-			
+
 	def debug(self):
 		print('  val:', self.val)
 		print('  margin:', self.margin)
@@ -127,7 +121,6 @@ class Formula(Choice):
 	"""
 	Answer for Formula
 	"""
-	
 	def __init__(self):
 		"""
 		Create a new choice from parsed MD data
@@ -137,8 +130,7 @@ class Formula(Choice):
 		self.vars = []
 		self.formula = ''
 		self.margin = ''
-		
-	
+
 	def setVar(self, doc):
 		"""
 		Set variables
@@ -147,23 +139,20 @@ class Formula(Choice):
 		if text.__class__.__name__ != 'Paragraph':
 			raise Exception('Answer format is incorrect')
 		self.vars.append([x.strip() for x in text.children[0].content.split(',')])
-		
-		
+
 	def setFormula(self, doc):
 		text = doc.children[0]
 		if text.__class__.__name__ != 'Paragraph':
 			raise Exception('Answer format is incorrect')
 		self.formula = text.children[0].content
-		
-		
+
 	def setAnswer(self, doc):
 		if doc.__class__.__name__ != 'Paragraph':
 			raise Exception('Answer format is incorrect')
 		split = [x.strip() for x in doc.children[0].content.split(',')]
 		self.val = int(split[0])
 		self.margin = split[1]
-		
-	
+
 	def debug(self):
 		print('  vars:', self.vars)
 		print('  formula:', self.formula)
@@ -175,7 +164,6 @@ class Matching(Choice):
 	"""
 	Answer choice for Matching, Multiple Blanks, Multiple Dropdown
 	"""
-	
 	def __init__(self, doc, key, renderer = HTMLRenderer):
 		"""
 		Create a new choice from parsed MD data
@@ -184,10 +172,10 @@ class Matching(Choice):
 		super().__init__('', False, None, '')
 		self.key = ''
 		
-		if key.__class__.__name__ != 'Parapgrah':
+		if key.__class__.__name__ != 'Paragraph':
 			self.setKey(key)
 		else:
-			 raise Exception('Key format is incorrect.')   
+			raise Exception('Key format is incorrect.')
 		if doc.leader != '*':
 			raise Exception('\'*\' is required for answer choices.')
 		for item in doc.children:
@@ -201,8 +189,7 @@ class Matching(Choice):
 					self.setFeedback(li)
 		with renderer() as renderer:
 			self.feedback = renderer.render(Document(self.feedback))
-			
-			
+
 	def debug(self):
 		print('  key:', self.key)
 		print('  val:', self.val)
