@@ -1,7 +1,9 @@
-from MDQuiz import *
+from Generator import Generator
+from Parser import *
 import sys
 import mistletoe
 from mistletoe import Document
+import xml.etree.ElementTree as ET
 
 
 if __name__ == '__main__':
@@ -9,9 +11,13 @@ if __name__ == '__main__':
 		filename = input("Enter file name: ")
 	else:
 		filename = sys.argv[1]
-	mdquiz = MDQuiz(filename)  # Parse the file into metadata
+	mdquiz = ParsedQuiz(filename)  # Parse the file into metadata
 	# generate qti data from metadata
 	# write back to QTI file
+	data = Generator(mdquiz)
+	mydata = ET.tostring(data)
+	myfile = open("sample/test.xml", "wb")
+	myfile.write(mydata)
 
 	mdquiz.debug()
 	for q in mdquiz.questions:

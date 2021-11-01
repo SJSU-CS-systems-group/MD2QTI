@@ -6,7 +6,7 @@
 @type: multiple choice
 @question: 1
 Which one is LIFO?
-@ answer:
+@answer:
 * Queue
 * > Stack
 * List

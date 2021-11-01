@@ -13,10 +13,11 @@ class Group:
 
 class Quiz:
 
-	def __init__(self, title: str, description: str, groups: List[Group] = []):
+	def __init__(self, title: str, description: str, ident: str, groups: List[Group] = []):
 		"""Create a quiz"""
 		self.title = title
 		self.description = description
+		self.ident = ident
 		self.groups = groups
 
 	def print(self):

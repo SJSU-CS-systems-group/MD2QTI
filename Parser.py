@@ -1,4 +1,6 @@
 import sys
+import uuid
+
 import mistletoe
 from mistletoe import Document
 from mistletoe.html_renderer import HTMLRenderer
@@ -6,15 +8,16 @@ from Question import *
 from Quiz import *
 
 
-class MDQuestion(Question):
+class ParsedQuestion(Question):
 	"""
 	Information of each question
 
 	Attr:
 		title (str): Question title
+		ident (str): Question unique identifier
 		points (int): Question points
 		question (str): Question instruction. escaped-html format
-		answer (List[any]): Question answers. Format follows the question type
+		answers (List[any]): Question answers. Format follows the question type
 		qtype (str): Question type
 		feedback (str): General feedback for question
 	"""
@@ -24,6 +27,7 @@ class MDQuestion(Question):
 		Raises an error if any issue found
 		"""
 		self.title = ''
+		self.ident = 'md2qti' + uuid.uuid4().hex
 		self.points = -1
 		self.question = ''
 		self.answers = []
@@ -96,9 +100,15 @@ class MDQuestion(Question):
 		# 'file': 10,
 		# 'text': 11
 		if self.qtype == 1 or self.qtype == 2 or self.qtype == 6:  # multiple choice/answer, blank
+			alphabet_string = string.ascii_uppercase
+			alphabet_list = list(alphabet_string)
+			i = 0
 			if doc.__class__.__name__ == 'List':
 				for item in doc.children:
 					self.answers.append(MultipleChoice(item))
+				for answer in self.answers:
+					answer.setId(alphabet_list[i])
+					i += 1
 			else:
 				raise Exception('Answer format is incorrect.')
 		elif self.qtype == 3: # numerical
@@ -133,6 +143,7 @@ class MDQuestion(Question):
 		Print all members for debug purpose
 		"""
 		print('title:', self.title)
+		print('ident:', self.ident)
 		print('points:', self.points)
 		print('qtype:', self.qtype)
 		print('question:', self.question)
@@ -141,7 +152,7 @@ class MDQuestion(Question):
 		print('feedback:', self.feedback)
 		
 		
-class MDGroup(Group):
+class ParsedGroup(Group):
 	"""
 	Questions can be populated in a group and randomly picked
 	* 'points per question' will overwrite the points of each question
@@ -169,19 +180,21 @@ class MDGroup(Group):
 			self.ppq = int(ppq)
 			
 			
-class MDQuiz(Quiz):
+class ParsedQuiz(Quiz):
 	"""
 	Holds all information of the quiz
 	
 	Attr:
 		title (str): Quiz title
 		desc (str): Quiz description
+		ident (str): Quiz unique identifier
 		questions (List): List of Group and Question. They are populated
 		into one list to follow the order of questions in MD file.
 	"""
 	def __init__(self, filename):
 		self.title = ''
 		self.description = ''
+		self.ident = 'md2qti' + uuid.uuid4().hex
 		self.questions = []
 		
 		try:
@@ -212,7 +225,7 @@ class MDQuiz(Quiz):
 					self.setDescription(doc.content)
 				elif doc.__class__.__name__ == 'Setting' and doc.option == 'group' and doc.content  == 'start':
 					in_group = True
-					group = MDGroup()
+					group = ParsedGroup()
 				elif doc.__class__.__name__ == 'Setting' and doc.option == 'pick' and in_group:
 					group.setPick(doc.content)
 				elif doc.__class__.__name__ == 'Setting' and doc.option == 'points per question' and in_group:
@@ -224,9 +237,9 @@ class MDQuiz(Quiz):
 					if not docs:
 						continue
 					if in_group:
-						group.questions.append(MDQuestion(docs))
+						group.questions.append(ParsedQuestion(docs))
 					else:
-						self.questions.append(MDQuestion(docs))
+						self.questions.append(ParsedQuestion(docs))
 					docs.clear()
 				else:
 					docs.append(doc)
@@ -248,3 +261,4 @@ class MDQuiz(Quiz):
 	def debug(self):
 		print(f'Quiz title: {self.title}')
 		print(f'Quiz description: {self.description}')
+		print(f'Quiz ident: {self.ident}')

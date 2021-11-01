@@ -1,3 +1,4 @@
+import string
 from typing import List
 import mistletoe
 from mistletoe import Document
@@ -31,12 +32,12 @@ class Qtype:
 	
 class Choice:
 
-	def __init__(self, val, is_correct: bool, info=None, feedback=""):
+	def __init__(self, val, is_correct: bool, ident="", feedback=""):
 		"""Create a choice for a question"""
 		self.val = val
 		self.is_correct = is_correct
 		self.feedback = feedback
-		self.info = info
+		self.ident = ident
 
 	def setVal(self, doc):
 		for item in doc.children:
@@ -52,6 +53,9 @@ class Choice:
 			elif item.__class__.__name__ == 'LineBreak':
 				self.key += '\n'
 
+	def setId(self, ident):
+		self.ident = ident
+
 	def setFeedback(self, li):
 		for fb in li.children:
 			if fb.__class__.__name__ == 'Setting' and fb.option == 'feedback':
@@ -65,13 +69,13 @@ class MultipleChoice(Choice):
 	Answer choice for Multiple choice, Multiple answers
 	"""
 	
-	def __init__(self, doc, renderer = HTMLRenderer):
+	def __init__(self, doc, renderer=HTMLRenderer):
 		"""
 		Create a new choice from parsed MD data
-		Raises  an error if any issue found
+		Raises an error if any issue found
 		"""
-		super().__init__('', False, None, '')
-		
+		super().__init__('', False, '', '')
+
 		if doc.leader != '*':
 			raise Exception('\'*\' is required for answer choices.')
 		for item in doc.children:
@@ -89,6 +93,7 @@ class MultipleChoice(Choice):
 	def debug(self):
 		print('  val:', self.val)
 		print('  is_correct:', self.is_correct)
+		print('  ident:', self.ident)
 		print('  feedback:', self.feedback)
 			
 			
@@ -199,8 +204,9 @@ class Matching(Choice):
 
 class Question:
 
-	def __init__(self, title, question_type=1, question_choices: [Choice] = [], points=1):
+	def __init__(self, title, ident, question_type=1, question_choices: [Choice] = [], points=1):
 		self.title = title
+		self.ident = ident
 		self.points = points
 		self.type = question_type
 		self.choices = question_choices
