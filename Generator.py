@@ -41,15 +41,15 @@ def Generator(MDQuiz):
         # blank: 6,
         elif question.qtype == 6:
             fill_in_the_blank(question, section)
-        # 'multiple blank': 7,
+        # multiple blank: 7,
         elif question.qtype == 7:
             fill_in_multiple_blank(question, section)
-        # # 'matching': 8,
-        # elif question.qtype == 8:
-        #     matching(question, data)
-        # # 'multiple dropdown': 9,
-        # elif question.qtype == 9:
-        #     multiple_dropdown(question, data)
+        # 'matching': 8,
+        elif question.qtype == 8:
+            matching(question, section)
+        # multiple dropdown: 9,
+        elif question.qtype == 9:
+            multiple_dropdown(question, section)
         # 'file': 10,
         # 'text': 11
         else:
@@ -372,7 +372,7 @@ def fill_in_the_blank(question, parentElement):
 
 
 def fill_in_multiple_blank(question, parentElement):
-    dividedScores = str(float(100/len(question.keys)))
+    dividedScore = str(float(100/len(question.keys)))
     item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
     # Item metadata
     setItemMetaData(question, item)
@@ -408,9 +408,9 @@ def fill_in_multiple_blank(question, parentElement):
     for answer in question.answers:
         if answer.feedback != '':
             respcondition = ET.SubElement(resprocessing, 'respcondition', {'continue': 'Yes'})
-            conditionvar = ET.SubElement(respcondition, "conditionvar")
+            conditionvar = ET.SubElement(respcondition, 'conditionvar')
             varequal = ET.SubElement(conditionvar, "varequal", {'respident': 'response_'+answer.key})
-            varequal.text = answer.val
+            varequal.text = answer.ident
             displayfeedback = ET.SubElement(respcondition, 'displayfeedback', {'linkrefid': answer.ident+'_fb',
                                                                                'feedbacktype': 'Response'})
     for key in question.keys:
@@ -421,7 +421,160 @@ def fill_in_multiple_blank(question, parentElement):
                 varequal = ET.SubElement(conditionvar, "varequal", {'respident': 'response_' + key})
                 varequal.text = answer.ident
         setvar = ET.SubElement(respcondition, 'setvar', {'action': 'Add', 'varname': 'SCORE'})
-        setvar.text = dividedScores
+        setvar.text = dividedScore
+
+    #feedback
+    setFeedback(question, item)
+
+
+def matching(question, parentElement):
+    numberOfValidKeys = 0
+    for key in question.keys:
+        if key != 'DISTRACTOR':
+            numberOfValidKeys += 1
+    dividedScore = str(float(100/numberOfValidKeys))
+    item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
+
+    # Item metadata
+    answerIds = ''
+    for i in range(0, numberOfValidKeys):
+        if answerIds == '':
+            answerIds = question.matchingKey[i]
+        else:
+            answerIds = answerIds + ',' + question.matchingKey[i]
+    itemmetadata = ET.SubElement(item, 'itemmetadata')
+    qtimetadata = ET.SubElement(itemmetadata, 'qtimetadata')
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'question_type'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = 'matching_question'
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'points_possible'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = str(question.points)
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'original_answer_ids'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = answerIds
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'assessment_question_identifierref'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = question.ident
+
+    # Presentation
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+    mattext.text = question.question
+
+    for keyIndex in range(0, numberOfValidKeys):
+        response_lid = ET.SubElement(presentation, 'response_lid', {'ident': 'response_'+str(keyIndex)})
+        material = ET.SubElement(response_lid, 'material')
+        mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/plain'})
+        mattext.text = question.answers[keyIndex].key
+        render_choice = ET.SubElement(response_lid, 'render_choice')
+        for valIndex in range(0, len(question.matchingVal)):
+            response_label = ET.SubElement(render_choice, 'response_label', {'ident': question.matchingVal[valIndex]})
+            material = ET.SubElement(response_label, 'material')
+            mattext = ET.SubElement(material, 'mattext')
+            mattext.text = question.answers[valIndex].val
+
+    # Response processing
+    resprocessing = ET.SubElement(item, 'resprocessing')
+    outcomes = ET.SubElement(resprocessing, 'outcomes')
+    decvar = ET.SubElement(outcomes, 'decvar', {'maxvalue': '100',
+                                                'minvalue': '0',
+                                                'varname': 'SCORE',
+                                                'vartype': 'Decimal'})
+    if question.feedback != '':
+        setGeneralFeedback(resprocessing)
+    for keyIndex in range(0, numberOfValidKeys):
+        respcondition = ET.SubElement(resprocessing, 'respcondition')
+        conditionvar = ET.SubElement(respcondition, 'conditionvar')
+        varequal = ET.SubElement(conditionvar, "varequal", {'respident': 'response_'+str(keyIndex)})
+        varequal.text = question.matchingVal[keyIndex]
+        setvar = ET.SubElement(respcondition, 'setvar', {'action': 'Add', 'varname': 'SCORE'})
+        setvar.text = dividedScore
+        if question.answers[keyIndex].feedback != '':
+            respcondition = ET.SubElement(resprocessing, 'respcondition')
+            conditionvar = ET.SubElement(respcondition, 'conditionvar')
+            nottag = ET.SubElement(conditionvar, 'not')
+            varequal = ET.SubElement(nottag, "varequal", {'respident': 'response_'+keyIndex})
+            varequal.text = question.matchingVal[keyIndex]
+            displayfeedback = ET.SubElement(respcondition, 'displayfeedback', {'linkrefid': str(keyIndex)+'_fb',
+                                                                               'feedbacktype': 'Response'})
+
+    #feedback
+    if question.feedback != '':
+        itemfeedback = ET.SubElement(item, 'itemfeedback', {'ident': 'general_fb'})
+        flow_mat = ET.SubElement(itemfeedback, 'flow_mat')
+        material = ET.SubElement(flow_mat, 'material')
+        mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+        mattext.text = question.feedback
+    for keyIndex in range(0, numberOfValidKeys):
+        if question.answers[keyIndex].feedback != '':
+            itemfeedback = ET.SubElement(parentElement, 'itemfeedback', {'ident': str(keyIndex) + '_fb'})
+            flow_mat = ET.SubElement(itemfeedback, 'flow_mat')
+            material = ET.SubElement(flow_mat, 'material')
+            mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+            mattext.text = question.answers[keyIndex].feedback
+
+
+def multiple_dropdown(question, parentElement):
+    dividedScore = str(float(100/len(question.keys)))
+    item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
+    # Item metadata
+    setItemMetaData(question, item)
+
+    # Presentation
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+    mattext.text = question.question
+
+    for key in question.keys:
+        response_lid = ET.SubElement(presentation, 'response_lid', {'ident': 'response_'+key})
+        material = ET.SubElement(response_lid, 'material')
+        mattext = ET.SubElement(material, 'mattext')
+        mattext.text = key
+        render_choice = ET.SubElement(response_lid, 'render_choice')
+        for answer in question.answers:
+            if answer.key == key:
+                response_label = ET.SubElement(render_choice, 'response_label', {'ident': answer.ident})
+                material = ET.SubElement(response_label, 'material')
+                mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/plain'})
+                mattext.text = answer.val
+
+    # Response processing
+    resprocessing = ET.SubElement(item, 'resprocessing')
+    outcomes = ET.SubElement(resprocessing, 'outcomes')
+    decvar = ET.SubElement(outcomes, 'decvar', {'maxvalue': '100',
+                                                'minvalue': '0',
+                                                'varname': 'SCORE',
+                                                'vartype': 'Decimal'})
+    if question.feedback != '':
+        setGeneralFeedback(resprocessing)
+    for answer in question.answers:
+        if answer.feedback != '':
+            respcondition = ET.SubElement(resprocessing, 'respcondition', {'continue': 'Yes'})
+            conditionvar = ET.SubElement(respcondition, 'conditionvar')
+            varequal = ET.SubElement(conditionvar, "varequal", {'respident': 'response_'+answer.key})
+            varequal.text = answer.ident
+            displayfeedback = ET.SubElement(respcondition, 'displayfeedback', {'linkrefid': answer.ident+'_fb',
+                                                                               'feedbacktype': 'Response'})
+    for key in question.keys:
+        respcondition = ET.SubElement(resprocessing, 'respcondition')
+        conditionvar = ET.SubElement(respcondition, 'conditionvar')
+        for answer in question.answers:
+            if (answer.key == key) & (answer.is_correct):
+                varequal = ET.SubElement(conditionvar, "varequal", {'respident': 'response_' + key})
+                varequal.text = answer.ident
+        setvar = ET.SubElement(respcondition, 'setvar', {'action': 'Add', 'varname': 'SCORE'})
+        setvar.text = dividedScore
 
     #feedback
     setFeedback(question, item)

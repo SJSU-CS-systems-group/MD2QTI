@@ -200,6 +200,7 @@ class Matching(Choice):
 		print('  key:', self.key)
 		print('  val:', self.val)
 		print('  is_correct:', self.is_correct)
+		print('  ident:', self.ident)
 		print('  feedback:', self.feedback)
 
 

@@ -1,26 +1,18 @@
 @quiz title: asdf
 @quiz description: asdf
 ---
----
-@title: This be an Essay
+@title: Multiple Dropdown
 @points: 4
-@type: essay
-@question: 5
-Explain the best and worst case of Quick sort
----
-@title: this be Multiple blanks
-@points: 4
-@type: multiple blanks
-@question: 7
-0x is a prefix for [box1] numbers
-0o is a prefix for [box2] numbers
+@type: multiple dropdown
+@question: 9
+City [box1], State [box2]
 @answer:
 + box1
-    * > hex
-    * > Hex
-    * > HEX
+    * > San Jose
+    * Texas
+    * Arizona
 + box2
-    * > oct
-    * > Oct
-    * > OCT
+    * Los Angeles
+    * Seattle
+    * > California
 ---

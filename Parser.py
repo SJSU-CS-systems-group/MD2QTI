@@ -33,6 +33,8 @@ class ParsedQuestion(Question):
 		self.question = ''
 		self.answers = []
 		self.keys = []
+		self.matchingKey = []
+		self.matchingVal = []
 		self.qtype = -1
 		self.feedback = ''
 		self.in_question = False
@@ -142,6 +144,8 @@ class ParsedQuestion(Question):
 					if answer.key not in self.keys:
 						self.keys.append(answer.key)
 					answer.setId(alphabet_list[i])
+					self.matchingKey.append(str(i))
+					self.matchingVal.append(alphabet_list[i])
 					i += 1
 			else:
 				raise Exception('Answer format is incorrect for matching??')
