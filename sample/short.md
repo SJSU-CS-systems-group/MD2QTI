@@ -1,16 +1,26 @@
 @quiz title: asdf
 @quiz description: asdf
 ---
-@title: This should be a multiple choice question!
+---
+@title: This be an Essay
 @points: 4
-@type: multiple choice
-@question: 1
-Which one is LIFO?
+@type: essay
+@question: 5
+Explain the best and worst case of Quick sort
+---
+@title: this be Multiple blanks
+@points: 4
+@type: multiple blanks
+@question: 7
+0x is a prefix for [box1] numbers
+0o is a prefix for [box2] numbers
 @answer:
-* Queue
-  * @feedback: asdf
-* > Stack
-* List
-* Circular Queue 
-@feedback: good job making it this far
++ box1
+    * > hex
+    * > Hex
+    * > HEX
++ box2
+    * > oct
+    * > Oct
+    * > OCT
 ---

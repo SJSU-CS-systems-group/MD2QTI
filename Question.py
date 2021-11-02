@@ -104,9 +104,9 @@ class Numerical(Choice):
 	def __init__(self, doc):
 		"""
 		Create a new choice from parsed MD data
-		Raises  an error if any issue found
+		Raises an error if any issue found
 		"""
-		super().__init__(0.0, False, None, '')
+		super().__init__(0.0, False, '', '')
 		self.margin = 0.0
 		
 		for item in doc.children:
@@ -120,6 +120,7 @@ class Numerical(Choice):
 	def debug(self):
 		print('  val:', self.val)
 		print('  margin:', self.margin)
+		print('  ident:', self.ident)
 		
 		
 class Formula(Choice):
@@ -131,7 +132,7 @@ class Formula(Choice):
 		Create a new choice from parsed MD data
 		Raises  an error if any issue found
 		"""
-		super().__init__(0, True, None, '')
+		super().__init__(0, True, '', '')
 		self.vars = []
 		self.formula = ''
 		self.margin = ''
@@ -169,18 +170,18 @@ class Matching(Choice):
 	"""
 	Answer choice for Matching, Multiple Blanks, Multiple Dropdown
 	"""
-	def __init__(self, doc, key, renderer = HTMLRenderer):
+	def __init__(self, doc, key, renderer=HTMLRenderer):
 		"""
 		Create a new choice from parsed MD data
-		Raises  an error if any issue found
+		Raises an error if any issue found
 		"""
-		super().__init__('', False, None, '')
+		super().__init__('', False, '', '')
 		self.key = ''
 		
-		if key.__class__.__name__ != 'Paragraph':
+		if key.__class__.__name__ == 'Paragraph':
 			self.setKey(key)
 		else:
-			raise Exception('Key format is incorrect.')
+			raise Exception('Key format is incorrect for matching???')
 		if doc.leader != '*':
 			raise Exception('\'*\' is required for answer choices.')
 		for item in doc.children:

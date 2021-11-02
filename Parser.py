@@ -18,6 +18,7 @@ class ParsedQuestion(Question):
 		points (int): Question points
 		question (str): Question instruction. escaped-html format
 		answers (List[any]): Question answers. Format follows the question type
+		keys (List(str)): Keys for Multiple Blank answers
 		qtype (str): Question type
 		feedback (str): General feedback for question
 	"""
@@ -31,6 +32,7 @@ class ParsedQuestion(Question):
 		self.points = -1
 		self.question = ''
 		self.answers = []
+		self.keys = []
 		self.qtype = -1
 		self.feedback = ''
 		self.in_question = False
@@ -99,9 +101,10 @@ class ParsedQuestion(Question):
 		# 'multiple dropdown': 9,
 		# 'file': 10,
 		# 'text': 11
+		alphabet_string = string.ascii_uppercase
+		alphabet_list = list(alphabet_string)
+
 		if self.qtype == 1 or self.qtype == 2 or self.qtype == 6:  # multiple choice/answer, blank
-			alphabet_string = string.ascii_uppercase
-			alphabet_list = list(alphabet_string)
 			i = 0
 			if doc.__class__.__name__ == 'List':
 				for item in doc.children:
@@ -114,6 +117,7 @@ class ParsedQuestion(Question):
 		elif self.qtype == 3: # numerical
 			if doc.__class__.__name__ == 'Quote':
 				self.answers.append(Numerical(doc))
+				self.answers[0].setId('A')
 			else:
 				raise Exception('Answer format is incorrect.')
 		elif self.qtype == 4:  # formula
@@ -133,8 +137,14 @@ class ParsedQuestion(Question):
 				for key in doc.children:
 					for item in key.children[1].children:
 						self.answers.append(Matching(item, key.children[0]))
+				i = 0
+				for answer in self.answers:
+					if answer.key not in self.keys:
+						self.keys.append(answer.key)
+					answer.setId(alphabet_list[i])
+					i += 1
 			else:
-				raise Exception('Answer format is incorrect')
+				raise Exception('Answer format is incorrect for matching??')
 		elif self.qtype == 5 or self.qtype == 10 or self.qtype == 11:  # essay, file, text
 			raise Exception('Answer is not required for essay, file, text question-type')
 
