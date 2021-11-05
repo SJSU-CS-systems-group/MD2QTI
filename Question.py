@@ -1,4 +1,7 @@
 import string
+import random
+
+import sympy as sy
 from typing import List
 import mistletoe
 from mistletoe import Document
@@ -121,8 +124,8 @@ class Numerical(Choice):
 		print('  val:', self.val)
 		print('  margin:', self.margin)
 		print('  ident:', self.ident)
-		
-		
+
+
 class Formula(Choice):
 	"""
 	Answer for Formula
@@ -136,6 +139,7 @@ class Formula(Choice):
 		self.vars = []
 		self.formula = ''
 		self.margin = ''
+		self.generatedValues = []
 
 	def setVar(self, doc):
 		"""
@@ -157,13 +161,32 @@ class Formula(Choice):
 			raise Exception('Answer format is incorrect')
 		split = [x.strip() for x in doc.children[0].content.split(',')]
 		self.val = int(split[0])
-		self.margin = split[1]
+		self.margin = int(split[1].strip('%'))
+		self.generateValues()
+
+	def generateValues(self):
+		alphabet_string = string.ascii_uppercase
+		alphabet_list = list(alphabet_string)
+		for i in range(self.val):
+			tmpList = []
+			for var in self.vars:
+				# Get a random number from given min and max range
+				randNum = round(random.uniform(float(var[1]), float(var[2])), int(var[3]))
+				# Get variable and assign its value as randNum
+				tmp = (var[0], randNum)
+				tmpList.append(tmp)
+			# Generate solution with given formula. Functions similarly to eval
+			expr = sy.sympify(self.formula)
+			solution = round(expr.subs(tmpList), int(var[3]))
+			tmpList.append((alphabet_list[i], solution))
+			self.generatedValues.append(tmpList)
 
 	def debug(self):
 		print('  vars:', self.vars)
 		print('  formula:', self.formula)
 		print('  val:', self.val)
 		print('  margin:', self.margin)
+		print('  generatedValues:', self.generatedValues)
 		
 		
 class Matching(Choice):

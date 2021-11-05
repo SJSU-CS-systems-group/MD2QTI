@@ -1,18 +1,15 @@
 @quiz title: asdf
 @quiz description: asdf
 ---
-@title: Multiple Dropdown
+@title: File Upload
 @points: 4
-@type: multiple dropdown
-@question: 9
-City [box1], State [box2]
-@answer:
-+ box1
-    * > San Jose
-    * Texas
-    * Arizona
-+ box2
-    * Los Angeles
-    * Seattle
-    * > California
+@type: file
+@question: 10
+Implement Bubble sort and upload your .py file
 ---
+@title: Text Only
+@points: 0
+@type: text
+@question: 11
+This is a text box
+___

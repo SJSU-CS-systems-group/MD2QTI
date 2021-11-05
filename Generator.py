@@ -50,10 +50,14 @@ def Generator(MDQuiz):
         # multiple dropdown: 9,
         elif question.qtype == 9:
             multiple_dropdown(question, section)
-        # 'file': 10,
-        # 'text': 11
+        # file: 10,
+        elif question.qtype == 10:
+            file_upload(question, section)
+        # text: 11
+        elif question.qtype == 11:
+            text_only(question, section)
         else:
-            itemMetadata = ET.SubElement(section, 'asdfadfasfafasdfaf')
+            raise Exception('Invalid question format!')
     return data
 
 
@@ -292,7 +296,93 @@ def numerical(question, parentElement):
 def formula(question, parentElement):
     item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
     # Item metadata
-    setItemMetaData(question, item)
+    choice = question.answers[0]
+    answerIds = ''
+    for i in range(len(choice.generatedValues)):
+        if answerIds == '':
+            answerIds = choice.generatedValues[i][-1][0]
+        else:
+            answerIds = answerIds + ',' + choice.generatedValues[i][-1][0]
+    itemmetadata = ET.SubElement(item, 'itemmetadata')
+    qtimetadata = ET.SubElement(itemmetadata, 'qtimetadata')
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'question_type'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = 'calculated_question'
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'points_possible'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = str(question.points)
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'original_answer_ids'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = answerIds
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'assessment_question_identifierref'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = question.ident
+
+    # Presentation
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+    mattext.text = question.question
+
+    response_str = ET.SubElement(presentation, 'response_str', {'ident': 'response1', 'rcardinality': 'Single'})
+    render_fib = ET.SubElement(response_str, 'render_fib', {'fibtype': 'Decimal'})
+    response_label = ET.SubElement(render_fib, 'response_label', {'ident': 'answer1'})
+
+    # Response processing
+    resprocessing = ET.SubElement(item, 'resprocessing')
+    outcomes = ET.SubElement(resprocessing, 'outcomes')
+    decvar = ET.SubElement(outcomes, 'decvar', {'maxvalue': '100',
+                                                'minvalue': '0',
+                                                'varname': 'SCORE',
+                                                'vartype': 'Decimal'})
+    if question.feedback != '':
+        setGeneralFeedback(resprocessing)
+    respcondition = ET.SubElement(resprocessing, 'respcondition', {'title': 'correct'})
+    conditionvar = ET.SubElement(respcondition, 'conditionvar')
+    other = ET.SubElement(conditionvar, 'other')
+    setvar = ET.SubElement(respcondition, 'setvar', {'action': 'Set', 'varname': 'SCORE'})
+    setvar.text = '100'
+    respcondition = ET.SubElement(resprocessing, 'respcondition', {'title': 'incorrect'})
+    conditionvar = ET.SubElement(respcondition, 'conditionvar')
+    nottag = ET.SubElement(conditionvar, 'not')
+    other = ET.SubElement(nottag, 'other')
+    setvar = ET.SubElement(respcondition, 'setvar', {'action': 'Set', 'varname': 'SCORE'})
+    setvar.text = '0'
+
+    # Extension
+    itemproc_extension = ET.SubElement(item, 'itemproc_extension')
+    calculated = ET.SubElement(itemproc_extension, 'calculated')
+    answer_tolerance = ET.SubElement(calculated, 'answer_tolerance')
+    answer_tolerance.text = str(choice.margin)
+    formulas = ET.SubElement(calculated, 'formulas', {'decimal_places': choice.vars[0][3]})
+    formula = ET.SubElement(formulas, 'formula')
+    formula.text = choice.formula
+    vars = ET.SubElement(calculated, 'vars')
+    for variable in choice.vars:
+        var = ET.SubElement(vars, 'var', {'scale': variable[3], 'name': variable[0]})
+        min = ET.SubElement(var, 'min')
+        min.text = variable[1]
+        max = ET.SubElement(var, 'max')
+        max.text = variable[2]
+    var_sets = ET.SubElement(calculated, 'var_sets')
+    for values in choice.generatedValues:
+        var_set = ET.SubElement(var_sets, 'var_set', {'ident': values[-1][0]})
+        for j in range(len(values)-1):
+            var = ET.SubElement(var_set, 'var', {'name': values[j][0]})
+            var.text = str(values[j][1])
+        answer = ET.SubElement(var_set, 'answer')
+        answer.text = str(values[-1][1])
+
+    #feedback
+    setFeedback(question, item)
 
 
 def essay(question, parentElement):
@@ -578,3 +668,42 @@ def multiple_dropdown(question, parentElement):
 
     #feedback
     setFeedback(question, item)
+
+
+def file_upload(question, parentElement):
+    item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
+    # Item metadata
+    setItemMetaData(question, item)
+
+    # Presentation
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+    mattext.text = question.question
+
+    # Response processing
+    resprocessing = ET.SubElement(item, 'resprocessing')
+    outcomes = ET.SubElement(resprocessing, 'outcomes')
+    decvar = ET.SubElement(outcomes, 'decvar', {'maxvalue': '100',
+                                                'minvalue': '0',
+                                                'varname': 'SCORE',
+                                                'vartype': 'Decimal'})
+    if question.feedback != '':
+        setGeneralFeedback(resprocessing)
+
+    # feedback
+    setFeedback(question, item)
+
+
+def text_only(question, parentElement):
+    item = ET.SubElement(parentElement, 'item', {'ident': question.ident, 'title': question.title})
+    # Item metadata
+    setItemMetaData(question, item)
+
+    # Presentation
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext', {'texttype': 'text/html'})
+    mattext.text = question.question
+
+
