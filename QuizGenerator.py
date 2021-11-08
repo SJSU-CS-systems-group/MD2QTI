@@ -1,64 +1,84 @@
+import random
 import xml.etree.ElementTree as ET
 from Parser import ParsedQuiz
 
 
-def Generator(MDQuiz):
+def Generator(quizData):
     # Document information
     data = ET.Element('questestinterop', {'xmlns': 'http://www.imsglobal.org/xsd/ims_qtiasiv1p2',
                                           'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
                                           'xsi:schemaLocation': 'http://www.imsglobal.org/xsd/ims_qtiasiv1p2 http://www.imsglobal.org/xsd/ims_qtiasiv1p2p1.xsd'})
     assessment = ET.SubElement(data, 'assessment', {
-        'ident': MDQuiz.ident,
-        'title': MDQuiz.title})
-    # # QTI metadata
-    # qtimetadata = ET.SubElement(assessment, 'qtimetadata')
-    # qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
-    # fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
-    # fieldlabel.text = 'cc_maxattempts'
-    # fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
-    # fieldentry.text = '1'
-    #
-    section = ET.SubElement(assessment, 'section', {'ident': 'root_section'})
+        'ident': quizData.ident,
+        'title': quizData.title})
+    # QTI metadata
+    qtimetadata = ET.SubElement(assessment, 'qtimetadata')
+    qtimetadatafield = ET.SubElement(qtimetadata, 'qtimetadatafield')
+    fieldlabel = ET.SubElement(qtimetadatafield, 'fieldlabel')
+    fieldlabel.text = 'cc_maxattempts'
+    fieldentry = ET.SubElement(qtimetadatafield, 'fieldentry')
+    fieldentry.text = '1'
 
-    #For loop through MDQuiz.questions
+    mainSection = ET.SubElement(assessment, 'section', {'ident': 'root_section'})
 
-    for question in MDQuiz.questions:
-        # multiple choice: 1,
-        if question.qtype == 1:
-            multiple_choice(question, section)
-        # multiple answer: 2,
-        elif question.qtype == 2:
-            multiple_answer(question, section)
-        # numerical: 3,
-        elif question.qtype == 3:
-            numerical(question, section)
-        # formula: 4,
-        elif question.qtype == 4:
-            formula(question, section)
-        # essay: 5,
-        elif question.qtype == 5:
-            essay(question, section)
-        # blank: 6,
-        elif question.qtype == 6:
-            fill_in_the_blank(question, section)
-        # multiple blank: 7,
-        elif question.qtype == 7:
-            fill_in_multiple_blank(question, section)
-        # 'matching': 8,
-        elif question.qtype == 8:
-            matching(question, section)
-        # multiple dropdown: 9,
-        elif question.qtype == 9:
-            multiple_dropdown(question, section)
-        # file: 10,
-        elif question.qtype == 10:
-            file_upload(question, section)
-        # text: 11
-        elif question.qtype == 11:
-            text_only(question, section)
+    # For loop through MDQuiz.questions
+    for item in quizData.questions:
+        # If group of questions
+        if item.qtype == 0:
+            groupSection = ET.SubElement(mainSection, 'section', {'title': 'Group', 'ident': item.ident})
+            selection_ordering = ET.SubElement(groupSection, 'selection_ordering')
+            selection = ET.SubElement(selection_ordering, 'selection')
+            selection_number = ET.SubElement(selection, 'selection_number')
+            selection_number.text = str(item.pick)
+            selection_extension = ET.SubElement(selection, 'selection_extension')
+            points_per_item = ET.SubElement(selection_extension, 'points_per_items')
+            points_per_item.text = str(item.ppq)
+
+            selectedQuestions = random.sample(item.questions, item.pick)
+            for question in selectedQuestions:
+                question.points = item.ppq
+                getQuestionXML(question, groupSection)
         else:
-            raise Exception('Invalid question format!')
+            getQuestionXML(item, mainSection)
     return data
+
+
+def getQuestionXML(question, parentElement):
+    # multiple choice: 1,
+    if question.qtype == 1:
+        multiple_choice(question, parentElement)
+    # multiple answer: 2,
+    elif question.qtype == 2:
+        multiple_answer(question, parentElement)
+    # numerical: 3,
+    elif question.qtype == 3:
+        numerical(question, parentElement)
+    # formula: 4,
+    elif question.qtype == 4:
+        formula(question, parentElement)
+    # essay: 5,
+    elif question.qtype == 5:
+        essay(question, parentElement)
+    # blank: 6,
+    elif question.qtype == 6:
+        fill_in_the_blank(question, parentElement)
+    # multiple blank: 7,
+    elif question.qtype == 7:
+        fill_in_multiple_blank(question, parentElement)
+    # 'matching': 8,
+    elif question.qtype == 8:
+        matching(question, parentElement)
+    # multiple dropdown: 9,
+    elif question.qtype == 9:
+        multiple_dropdown(question, parentElement)
+    # file: 10,
+    elif question.qtype == 10:
+        file_upload(question, parentElement)
+    # text: 11
+    elif question.qtype == 11:
+        text_only(question, parentElement)
+    else:
+        raise Exception('Invalid question format!')
 
 
 def setItemMetaData(question, parentElement):

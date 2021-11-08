@@ -135,11 +135,17 @@ This is a text box
 
 ```{.python3 .run}
 import textwrap
-for x in range(5, 10):
+for x in range(2, 7):
     print(textwrap.dedent(rf"""
-        1.  What is ${x}\times 2$?
-        *a) ${x*2}$
-        b)  ${x*2-1}$
+        ---
+        @title: Multiple choice
+        @points: 4
+        @type: multiple choice
+        @question: {x}
+        What is {x} times 2?
+        @answer:
+        * {x*2-1}
+        * > {x*2}
         """))
 ```
 @group: end
