@@ -1,4 +1,4 @@
-@quiz title: Demo Quiz laksdjflasdfsafd
+@quiz title: Demo Quiz
 @quiz description: Let's hope this works!
 ---
 @title: Multiple choice
