@@ -1,3 +1,4 @@
--e git+ssh://git@github.com/SJSU-CS-systems-group/mistletoe.git@12efbd3179312fefeecdea1e50ee297d2ad1efc1#egg=mistletoe
+mistletoe @ git+ssh://git@github.com/SJSU-CS-systems-group/mistletoe.git
+click==8.1.2
 mpmath==1.2.1
 sympy==1.10

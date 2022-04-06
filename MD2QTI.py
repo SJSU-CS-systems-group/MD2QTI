@@ -1,3 +1,4 @@
+import click
 import string
 import random
 import os
@@ -1465,12 +1466,9 @@ def text_only(question, parentElement):
     mattext.text = question.question
 
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        filename = input("Enter file name: ")
-    else:
-        filename = sys.argv[1]
-
+@click.command()
+@click.argument("filename", type=click.Path(exists=True, dir_okay=False, readable=True))
+def MD2QTI(filename):
     # Parse the file into data
     quizData = ParsedQuiz(filename)
 
@@ -1515,6 +1513,9 @@ if __name__ == '__main__':
     # Delete the files
     os.remove('imsmanifest.xml')
     shutil.rmtree(contentPath)
+
+if __name__ == '__main__':
+    MD2QTI()
 
 # mdquiz.debug()
 # for q in mdquiz.questions:
